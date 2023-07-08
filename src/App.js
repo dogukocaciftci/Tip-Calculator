@@ -1,51 +1,91 @@
 import { useState } from "react";
-import Logo from "./components/Logo";
-import Form from "./components/Form";
-import PackingList from "./components/PackingList";
-import Stats from "./components/Stats";
-
-const initialItems = [
-  { id: 1, description: "Passports", quantity: 2, packed: false },
-  { id: 2, description: "Socks", quantity: 12, packed: true },
-  { id: 3, description: "Charger", quantity: 2, packed: false },
-];
 
 export default function App() {
-  const [items, setItems] = useState([]);
+  return (
+    <div className="app">
+      <TipCalculator />
+    </div>
+  );
+}
 
-  function handleAddItems(item) {
-    setItems((items) => [...items, item]);
-  }
+function TipCalculator() {
+  const [bill, setBill] = useState("");
+  const [percentage1, setPercentage1] = useState(0);
+  const [percentage2, setPercentage2] = useState(0);
 
-  function handleDeleteItem(id) {
-    setItems((items) => items.filter((item) => item.id !== id));
-  }
+  const tip = bill * ((percentage1 + percentage2) / 2 / 100);
 
-  function handleToggleItem(id) {
-    setItems((items) =>
-      items.map((item) =>
-        item.id === id ? { ...item, packed: !item.packed } : item
-      )
-    );
-  }
-
-  function handleClearList() {
-    alert("Are you sure you want to clear the list?");
-
-    setItems([]);
+  function handleReset() {
+    setBill("");
+    setPercentage1(0);
+    setPercentage2(0);
   }
 
   return (
-    <div className="app">
-      <Logo />
-      <Form onAddItems={handleAddItems} />
-      <PackingList
-        items={items}
-        onDeleteItem={handleDeleteItem}
-        onToggleItem={handleToggleItem}
-        onClearList={handleClearList}
-      />
-      <Stats items={items} />
+    <div className="tip-calculator">
+      <BillInput bill={bill} onSetBill={setBill} />
+      <SelectPercentage percentage={percentage1} onSelect={setPercentage1}>
+        How did you like the service?
+      </SelectPercentage>
+      <SelectPercentage percentage={percentage2} onSelect={setPercentage2}>
+        How did your friend like the service?
+      </SelectPercentage>
+
+      {bill > 0 && (
+        <>
+          <Output bill={bill} tip={tip} />
+          <Reset onReset={handleReset} />
+        </>
+      )}
     </div>
+  );
+}
+
+function BillInput({ bill, onSetBill }) {
+  return (
+    <div className="input-group">
+      <label htmlFor="bill-input">How much was the bill?</label>
+      <input
+        type="text"
+        id="bill-input"
+        placeholder="Bill value"
+        value={bill}
+        onChange={(e) => onSetBill(Number(e.target.value))}
+      />
+    </div>
+  );
+}
+
+function SelectPercentage({ children, percentage, onSelect }) {
+  return (
+    <div className="input-group">
+      <label htmlFor="percentage-select">{children}</label>
+      <select
+        id="percentage-select"
+        value={percentage}
+        onChange={(e) => onSelect(Number(e.target.value))}
+      >
+        <option value="0">Dissatisfied (0%)</option>
+        <option value="5">It was okay (5%)</option>
+        <option value="10">It was good (10%)</option>
+        <option value="20">Absolutely amazing! (20%)</option>
+      </select>
+    </div>
+  );
+}
+
+function Output({ bill, tip }) {
+  return (
+    <h3 className="output">
+      You pay ${bill + tip} (${bill} + ${tip} tip)
+    </h3>
+  );
+}
+
+function Reset({ onReset }) {
+  return (
+    <button className="reset-button" onClick={onReset}>
+      Reset
+    </button>
   );
 }
